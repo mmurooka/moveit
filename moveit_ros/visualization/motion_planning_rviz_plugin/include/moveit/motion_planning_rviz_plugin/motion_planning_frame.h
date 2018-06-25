@@ -195,6 +195,7 @@ private Q_SLOTS:
   void loadStateButtonClicked();
   void saveStartStateButtonClicked();
   void saveGoalStateButtonClicked();
+  void saveCurrentStateButtonClicked();
   void removeStateButtonClicked();
   void clearStatesButtonClicked();
   void setAsStartStateButtonClicked();
