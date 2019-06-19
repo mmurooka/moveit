@@ -57,6 +57,7 @@ public:
                     const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
                     std::vector<std::size_t>& added_path_index) const override
   {
+    ROS_WARN("adaptAndPlan of AddTimeParameterization is called.");
     bool result = planner(planning_scene, req, res);
     if (result && res.trajectory_)
     {

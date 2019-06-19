@@ -84,6 +84,7 @@ bool IterativeSplineParameterization::computeTimeStamps(robot_trajectory::RobotT
                                                         const double max_velocity_scaling_factor,
                                                         const double max_acceleration_scaling_factor) const
 {
+  ROS_WARN("computeTimeStamps of IterativeSplineParameterization is called.");
   if (trajectory.empty())
     return true;
 

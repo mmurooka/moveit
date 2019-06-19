@@ -461,6 +461,7 @@ bool IterativeParabolicTimeParameterization::computeTimeStamps(robot_trajectory:
                                                                const double max_velocity_scaling_factor,
                                                                const double max_acceleration_scaling_factor) const
 {
+  ROS_WARN("computeTimeStamps of IterativeParabolicTimeParameterization is called.");
   if (trajectory.empty())
     return true;
 
