@@ -41,6 +41,8 @@
 
 #include <limits>
 
+void tfCallback2();
+
 planning_scene_monitor::CurrentStateMonitor::CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
                                                                  const std::shared_ptr<tf2_ros::Buffer>& tf_buffer)
   : CurrentStateMonitor(robot_model, tf_buffer, ros::NodeHandle())
@@ -143,10 +145,17 @@ void planning_scene_monitor::CurrentStateMonitor::startStateMonitor(const std::s
       ROS_ERROR("The joint states topic cannot be an empty string");
     else
       joint_state_subscriber_ = nh_.subscribe(joint_states_topic, 25, &CurrentStateMonitor::jointStateCallback, this);
+    ROS_ERROR("HOGE1");
+    std::cout << "tf_buffer_: " << (bool)tf_buffer_ << std::endl;
+    std::cout << "robot_model_->getMultiDOFJointModels().empty() " << robot_model_->getMultiDOFJointModels().empty() << std::endl;
     if (tf_buffer_ && !robot_model_->getMultiDOFJointModels().empty())
     {
+      ROS_ERROR("HOGE2");
       tf_connection_.reset(new TFConnection(
-          tf_buffer_->_addTransformsChangedListener(boost::bind(&CurrentStateMonitor::tfCallback, this))));
+          tf_buffer_->_addTransformsChangedListener(tfCallback2)));
+      // tf_connection_.reset(new TFConnection(
+      //     tf_buffer_->_addTransformsChangedListener(boost::bind(&CurrentStateMonitor::tfCallback, this))));
+      ROS_ERROR_STREAM("tf_connection_: " << (bool)tf_connection_);
     }
     state_monitor_started_ = true;
     monitor_start_time_ = ros::Time::now();
@@ -204,6 +213,9 @@ bool planning_scene_monitor::CurrentStateMonitor::haveCompleteState(std::vector<
   bool result = true;
   const std::vector<const moveit::core::JointModel*>& joints = robot_model_->getActiveJointModels();
   boost::mutex::scoped_lock slock(state_update_lock_);
+  // for (const auto& [key, value] : joint_time_){
+  //   std::cout << key->getName() << " => " << value.toSec() << "\n";
+  // }
   for (const moveit::core::JointModel* joint : joints)
     if (joint_time_.find(joint) == joint_time_.end())
       if (!joint->isPassive() && !joint->getMimic())
@@ -409,6 +421,7 @@ void planning_scene_monitor::CurrentStateMonitor::jointStateCallback(const senso
 
 void planning_scene_monitor::CurrentStateMonitor::tfCallback()
 {
+  std::cout << "tfCallback() is called" << std::endl;;
   // read multi-dof joint states from TF, if needed
   const std::vector<const moveit::core::JointModel*>& multi_dof_joints = robot_model_->getMultiDOFJointModels();
 
@@ -417,12 +430,15 @@ void planning_scene_monitor::CurrentStateMonitor::tfCallback()
   {
     boost::mutex::scoped_lock _(state_update_lock_);
 
+    std::cout << "multi_dof_joints.size(): " << multi_dof_joints.size() << std::endl;
     for (size_t i = 0; i < multi_dof_joints.size(); i++)
     {
       const moveit::core::JointModel* joint = multi_dof_joints[i];
       const std::string& child_frame = joint->getChildLinkModel()->getName();
       const std::string& parent_frame =
           joint->getParentLinkModel() ? joint->getParentLinkModel()->getName() : robot_model_->getModelFrame();
+
+      std::cout << "i: " << i << " child_frame: " << child_frame << " parent_frame: " << parent_frame << std::endl;
 
       ros::Time latest_common_time;
       geometry_msgs::TransformStamped transf;
@@ -477,4 +493,10 @@ void planning_scene_monitor::CurrentStateMonitor::tfCallback()
     // notify waitForCurrentState() *after* potential update callbacks
     state_update_condition_.notify_all();
   }
+}
+
+void tfCallback2()
+{
+  std::cout << "tfCallback2() is called" << std::endl;;
+  ROS_ERROR("tfCallback2() is called");
 }

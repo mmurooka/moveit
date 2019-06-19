@@ -117,6 +117,7 @@ PlanningSceneMonitor::PlanningSceneMonitor(const std::string& robot_description,
                                            const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name)
   : PlanningSceneMonitor(planning_scene::PlanningScenePtr(), robot_description, tf_buffer, name)
 {
+  ROS_WARN_STREAM("PlanningSceneMonitor is generated 1");
 }
 
 PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
@@ -125,12 +126,14 @@ PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePt
   : PlanningSceneMonitor(scene, std::make_shared<robot_model_loader::RobotModelLoader>(robot_description), tf_buffer,
                          name)
 {
+  ROS_WARN_STREAM("PlanningSceneMonitor is generated 2");
 }
 
 PlanningSceneMonitor::PlanningSceneMonitor(const robot_model_loader::RobotModelLoaderPtr& rm_loader,
                                            const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name)
   : PlanningSceneMonitor(planning_scene::PlanningScenePtr(), rm_loader, tf_buffer, name)
 {
+  ROS_WARN_STREAM("PlanningSceneMonitor is generated 3");
 }
 
 PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
@@ -138,6 +141,9 @@ PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePt
                                            const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name)
   : monitor_name_(name), nh_("~"), tf_buffer_(tf_buffer), rm_loader_(rm_loader)
 {
+  ROS_WARN_STREAM("PlanningSceneMonitor is generated 3");
+  tf_buffer_.reset(new tf2_ros::Buffer);
+  ROS_WARN_STREAM("tf_buffer_ initial value 1: " << (bool)tf_buffer_);
   root_nh_.setCallbackQueue(&queue_);
   nh_.setCallbackQueue(&queue_);
   spinner_.reset(new ros::AsyncSpinner(1, &queue_));
@@ -151,6 +157,8 @@ PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePt
                                            const std::string& name)
   : monitor_name_(name), nh_("~"), root_nh_(nh), tf_buffer_(tf_buffer), rm_loader_(rm_loader)
 {
+  ROS_WARN_STREAM("PlanningSceneMonitor is generated 4");
+  ROS_WARN_STREAM("tf_buffer_ initial value 2: " << (bool)tf_buffer_);
   // use same callback queue as root_nh_
   nh_.setCallbackQueue(root_nh_.getCallbackQueue());
   initialize(scene);
@@ -1100,8 +1108,11 @@ void PlanningSceneMonitor::startStateMonitor(const std::string& joint_states_top
   stopStateMonitor();
   if (scene_)
   {
-    if (!current_state_monitor_)
+    if (!current_state_monitor_) {
+      ROS_ERROR("CurrentStateMonitor is generated here 1.");
+      ROS_ERROR_STREAM("tf_buffer_: " << (bool)tf_buffer_);
       current_state_monitor_.reset(new CurrentStateMonitor(getRobotModel(), tf_buffer_, root_nh_));
+    }
     current_state_monitor_->addUpdateCallback(boost::bind(&PlanningSceneMonitor::onStateUpdate, this, _1));
     current_state_monitor_->startStateMonitor(joint_states_topic);
 
